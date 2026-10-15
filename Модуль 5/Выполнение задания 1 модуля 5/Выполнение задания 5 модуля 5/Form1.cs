@@ -1,20 +1,25 @@
+#nullable disable
 using System;
-using System.Data;              // для DataTable — вычисление выражений
 using System.Windows.Forms;
 
 namespace Выполнение_задания_5_модуля_5
 {
     public partial class Form1 : Form
     {
+        // Переменные состояния
+        private double firstNumber = 0;      // первое число
+        private string currentOp = "";       // текущая операция
+        private bool newInput = true;        // флаг нового ввода
+        private Operation operation = null;  // объект операции (полиморфизм)
+
         public Form1()
         {
             InitializeComponent();
         }
 
-        // ОБЩИЙ ОБРАБОТЧИК ДЛЯ ВСЕХ 17 КНОПОК 
+        // === ОБЩИЙ ОБРАБОТЧИК ДЛЯ ВСЕХ 17 КНОПОК ===
         private void btnClear_Click(object sender, EventArgs e)
         {
-            // Определяем нажатую кнопку
             Button btn = (Button)sender;
             string text = btn.Text;
 
@@ -22,32 +27,77 @@ namespace Выполнение_задания_5_модуля_5
             if (text == "С" || text == "C")
             {
                 txtDisplay.Text = "";
+                firstNumber = 0;
+                currentOp = "";
+                operation = null;
+                newInput = true;
                 return;
             }
 
-            // Кнопка "=" — вычисление
+            // === Кнопка "=" — вычисление ===
             if (text == "=")
             {
+                if (operation == null) return;
+
                 try
                 {
-                    // Заменяем юникодный минус на обычный (для вычислений)
-                    string expr = txtDisplay.Text.Replace("−", "-");
+                    // Берём второе число из дисплея
+                    double secondNumber = double.Parse(txtDisplay.Text);
 
-                    // Считаем выражение через DataTable
-                    var result = new DataTable().Compute(expr, null);
+                    // Вызываем метод Calculate через объект операции (полиморфизм)
+                    double result = operation.Calculate(firstNumber, secondNumber);
 
                     // Показываем результат
                     txtDisplay.Text = result.ToString();
+
+                    // Сбрасываем операцию
+                    operation = null;
+                    newInput = true;
+                }
+                catch (DivideByZeroException)
+                {
+                    txtDisplay.Text = "Ошибка: деление на ноль";
+                    operation = null;
+                    newInput = true;
                 }
                 catch
                 {
                     txtDisplay.Text = "Ошибка";
+                    operation = null;
+                    newInput = true;
                 }
                 return;
             }
 
-            // Все остальные кнопки — просто добавляем текст в дисплей
-            txtDisplay.Text += text;
+            // === Кнопки операций (+, −, ×, ÷) ===
+            if (text == "+" || text == "−" || text == "*" || text == "/")
+            {
+                if (txtDisplay.Text == "") return;
+
+                // Запоминаем первое число
+                firstNumber = double.Parse(txtDisplay.Text);
+
+                // Создаём объект нужного класса (полиморфизм)
+                if (text == "+") operation = new Addition();
+                else if (text == "−") operation = new Subtraction();
+                else if (text == "*") operation = new Multiplication();
+                else if (text == "/") operation = new Division();
+
+                currentOp = text;
+                newInput = true;
+                return;
+            }
+
+            // === Цифры и точка ===
+            if (char.IsDigit(text[0]) || text == "," || text == ".")
+            {
+                if (newInput)
+                {
+                    txtDisplay.Text = "";
+                    newInput = false;
+                }
+                txtDisplay.Text += text;
+            }
         }
     }
 }
