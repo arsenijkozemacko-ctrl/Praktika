@@ -28,7 +28,7 @@ class Circle : IFigure
     }
 }
 
-// Прямоугольник реалиует IFigure
+// Прямоугольник реали  ует IFigure
 class Rectangle : IFigure
 {
     public double Width { get; set; } // ширина
