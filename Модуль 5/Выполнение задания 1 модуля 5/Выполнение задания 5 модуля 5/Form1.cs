@@ -6,98 +6,71 @@ namespace Выполнение_задания_5_модуля_5
 {
     public partial class Form1 : Form
     {
-        // Переменные состояния
-        private double firstNumber = 0;      // первое число
-        private string currentOp = "";       // текущая операция
-        private bool newInput = true;        // флаг нового ввода
-        private Operation operation = null;  // объект операции (полиморфизм)
+        private double firstNumber = 0;
+        private Operation operation = null;
+        private bool newInput = true;
 
         public Form1()
         {
             InitializeComponent();
         }
 
-        // === ОБЩИЙ ОБРАБОТЧИК ДЛЯ ВСЕХ 17 КНОПОК ===
+        // ОБЩИЙ ОБРАБОТЧИК ДЛЯ ВСЕХ КНОПОК
         private void btnClear_Click(object sender, EventArgs e)
         {
-            Button btn = (Button)sender;
-            string text = btn.Text;
+            string text = ((Button)sender).Text;
 
-            // === Кнопка "C" — очистка ===
-            if (text == "С" || text == "C")
+            // C — очистка
+            if (text == "C" || text == "С")
             {
-                txtDisplay.Text = "";
-                firstNumber = 0;
-                currentOp = "";
-                operation = null;
-                newInput = true;
+                txtDisplay.Text = ""; // очищение дисплея
+                operation = null; // сбрасывание операции
+                newInput = true; // следующий ввод - новое число
                 return;
             }
 
-            // === Кнопка "=" — вычисление ===
+            // = — вычисление
             if (text == "=")
             {
-                if (operation == null) return;
-
-                try
+                // Выполнение рачсёта если если операция выбрана
+                if (operation != null)
                 {
-                    // Берём второе число из дисплея
-                    double secondNumber = double.Parse(txtDisplay.Text);
-
-                    // Вызываем метод Calculate через объект операции (полиморфизм)
-                    double result = operation.Calculate(firstNumber, secondNumber);
-
-                    // Показываем результат
-                    txtDisplay.Text = result.ToString();
-
-                    // Сбрасываем операцию
-                    operation = null;
-                    newInput = true;
-                }
-                catch (DivideByZeroException)
-                {
-                    txtDisplay.Text = "Ошибка: деление на ноль";
-                    operation = null;
-                    newInput = true;
-                }
-                catch
-                {
-                    txtDisplay.Text = "Ошибка";
-                    operation = null;
-                    newInput = true;
+                    try
+                    {
+                        // Преобразования текст дисплея во второе число
+                        double second = double.Parse(txtDisplay.Text);
+                        txtDisplay.Text = operation.Calculate(firstNumber, second).ToString();
+                    }
+                    // Деление на ноль появляется ошибка
+                    catch { txtDisplay.Text = "Ошибка"; }
+                    operation = null; // сбрасывание операции
+                    newInput = true; // следующий ввод - новое число
                 }
                 return;
             }
 
-            // === Кнопки операций (+, −, ×, ÷) ===
+            // Операции +, −, *, /
             if (text == "+" || text == "−" || text == "*" || text == "/")
             {
+                // Калькулятор работает только если есть число
                 if (txtDisplay.Text == "") return;
 
-                // Запоминаем первое число
+                // Запоминание первого числа
                 firstNumber = double.Parse(txtDisplay.Text);
 
-                // Создаём объект нужного класса (полиморфизм)
-                if (text == "+") operation = new Addition();
-                else if (text == "−") operation = new Subtraction();
-                else if (text == "*") operation = new Multiplication();
-                else if (text == "/") operation = new Division();
+                // Создание объекта нужного класса в зависимости от кнопки
+                if (text == "+") operation = new Addition(); // сложение
+                if (text == "−") operation = new Subtraction(); // вычитание
+                if (text == "*") operation = new Multiplication(); // умножение
+                if (text == "/") operation = new Division(); // деление
 
-                currentOp = text;
-                newInput = true;
+                newInput = true; // следующая цифра начнёт новое число
                 return;
             }
 
-            // === Цифры и точка ===
-            if (char.IsDigit(text[0]) || text == "," || text == ".")
-            {
-                if (newInput)
-                {
-                    txtDisplay.Text = "";
-                    newInput = false;
-                }
-                txtDisplay.Text += text;
-            }
+            // Добавляем цифру или точку к текущему числу
+            if (newInput) { txtDisplay.Text = ""; newInput = false; }
+            txtDisplay.Text += text;
         }
     }
 }
