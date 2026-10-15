@@ -28,52 +28,51 @@
         /// </summary>
         private void InitializeComponent()
         {
-            button1 = new Button();
-            button2 = new Button();
-            button3 = new Button();
+            btnLine = new Button();
+            btnCircle = new Button();
+            btnRectangle = new Button();
             SuspendLayout();
             // 
-            // button1
+            // btnLine
             // 
-            button1.Location = new Point(12, 2);
-            button1.Name = "button1";
-            button1.Size = new Size(109, 44);
-            button1.TabIndex = 0;
-            button1.Text = "Линия";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += button1_Click;
+            btnLine.Location = new Point(12, 2);
+            btnLine.Name = "btnLine";
+            btnLine.Size = new Size(109, 44);
+            btnLine.TabIndex = 0;
+            btnLine.Text = "Линия";
+            btnLine.UseVisualStyleBackColor = true;
+            btnLine.Click += btnLine_Click;
             // 
-            // button2
+            // btnCircle
             // 
-            button2.Location = new Point(127, 2);
-            button2.Name = "button2";
-            button2.Size = new Size(109, 44);
-            button2.TabIndex = 1;
-            button2.Text = "Круг";
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += button2_Click;
+            btnCircle.Location = new Point(127, 2);
+            btnCircle.Name = "btnCircle";
+            btnCircle.Size = new Size(109, 44);
+            btnCircle.TabIndex = 1;
+            btnCircle.Text = "Круг";
+            btnCircle.UseVisualStyleBackColor = true;
+            btnCircle.Click += btnCircle_Click;
             // 
-            // button3
+            // btnRectangle
             // 
-            button3.Location = new Point(242, 2);
-            button3.Name = "button3";
-            button3.Size = new Size(109, 44);
-            button3.TabIndex = 2;
-            button3.Text = "Квадрат";
-            button3.UseVisualStyleBackColor = true;
-            button3.Click += button3_Click;
+            btnRectangle.Location = new Point(242, 2);
+            btnRectangle.Name = "btnRectangle";
+            btnRectangle.Size = new Size(109, 44);
+            btnRectangle.TabIndex = 2;
+            btnRectangle.Text = "Квадрат";
+            btnRectangle.UseVisualStyleBackColor = true;
+            btnRectangle.Click += btnRectangle_Click;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1329, 664);
-            Controls.Add(button3);
-            Controls.Add(button2);
-            Controls.Add(button1);
+            Controls.Add(btnRectangle);
+            Controls.Add(btnCircle);
+            Controls.Add(btnLine);
             Name = "Form1";
             Text = "Form1";
-            Load += Form1_Load;
             Paint += Form1_Paint;
             MouseDown += Form1_MouseDown;
             MouseUp += Form1_MouseUp;
@@ -82,8 +81,8 @@
 
         #endregion
 
-        private Button button1;
-        private Button button2;
-        private Button button3;
+        private Button btnLine;
+        private Button btnCircle;
+        private Button btnRectangle;
     }
 }

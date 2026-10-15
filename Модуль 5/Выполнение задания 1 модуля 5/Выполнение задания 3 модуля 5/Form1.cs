@@ -1,73 +1,72 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+
 namespace Выполнение_задания_3_модуля_5
 {
     public partial class Form1 : Form
     {
+        // Объект класса TaskManager
+        private TaskManager manager = new TaskManager();
+
         public Form1()
         {
             InitializeComponent();
         }
 
-        // кнопка "Добавить"
+        // Кнопка "Добавить" 
         private void btnAdd_Click(object sender, EventArgs e)
         {
             // Проверяем, что поле не пустое
-            if (txtTask.Text.Trim() != "")
+            if (txtTask.Text.Trim() == "")
             {
-                // Добавляем задачу в список
-                IstTasks.Items.Add(txtTask.Text);
+                MessageBox.Show("Введите текст задачи!");
+                return;
+            }
 
-                // Очищаем поле ввода для следующей задачи
-                txtTask.Clear();
-            }
-            else
-            {
-                MessageBox.Show("Ввдеите текст задачи!");
-            }
-            
+            // Добавляем задачу
+            manager.Add(txtTask.Text);
+
+            // Обновляем список
+            RefreshList();
+
+            // Очищаем поле
+            txtTask.Clear();
         }
 
-        // Кнопка "Удалить"
+        // Кнопка "Удалить" 
         private void btnRemove_Click(object sender, EventArgs e)
         {
-            // Проверяем, что задача выбрана
-            if(IstTasks.SelectedIndex !=-1)
+            if (LstTasks.SelectedIndex == -1)
             {
-                // Удаляем выбранный элемент
-                IstTasks.Items.RemoveAt(IstTasks.SelectedIndex);
+                MessageBox.Show("Выберите задачу!");
+                return;
             }
-            else
-            {
-                MessageBox.Show("выберите задачу для удаления!");
-            }
+
+            manager.RemoveAt(LstTasks.SelectedIndex);
+            RefreshList();
         }
 
         // Кнопка "Выполнено"
         private void btnDone_Click(object sender, EventArgs e)
         {
-            // Проверяем что задача выбрана
-            if (IstTasks.SelectedIndex != -1)
-            {
-                // Получаем текущий текст задачи
-                string task = IstTasks.Items[IstTasks.SelectedIndex].ToString();
-
-                // Если задача ещё не помечена - помечаем 
-                if (!task.StartsWith("✔"))
-                {
-                    IstTasks.Items[IstTasks.SelectedIndex] = "✔" + task;
-                }
-            }
-            else
+            if (LstTasks.SelectedIndex == -1)
             {
                 MessageBox.Show("Выберите задачу!");
+                return;
+            }
+
+            manager.MarkDone(LstTasks.SelectedIndex);
+            RefreshList();
+        }
+
+        // Обновление ListBox 
+        private void RefreshList()
+        {
+            LstTasks.Items.Clear();
+
+            foreach (TaskItem task in manager.GetAll())
+            {
+                LstTasks.Items.Add(task);   // вызовется ToString()
             }
         }
     }

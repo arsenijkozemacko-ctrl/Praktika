@@ -32,7 +32,7 @@
             txtTask = new TextBox();
             contextMenuStrip1 = new ContextMenuStrip(components);
             btnAdd = new Button();
-            IstTasks = new ListBox();
+            LstTasks = new ListBox();
             btnRemove = new Button();
             btnDone = new Button();
             SuspendLayout();
@@ -61,14 +61,14 @@
             btnAdd.UseVisualStyleBackColor = true;
             btnAdd.Click += btnAdd_Click;
             // 
-            // IstTasks
+            // LstTasks
             // 
-            IstTasks.FormattingEnabled = true;
-            IstTasks.IntegralHeight = false;
-            IstTasks.Location = new Point(10, 50);
-            IstTasks.Name = "IstTasks";
-            IstTasks.Size = new Size(460, 250);
-            IstTasks.TabIndex = 3;
+            LstTasks.FormattingEnabled = true;
+            LstTasks.IntegralHeight = false;
+            LstTasks.Location = new Point(10, 50);
+            LstTasks.Name = "LstTasks";
+            LstTasks.Size = new Size(460, 250);
+            LstTasks.TabIndex = 3;
             // 
             // btnRemove
             // 
@@ -97,7 +97,7 @@
             ClientSize = new Size(780, 474);
             Controls.Add(btnDone);
             Controls.Add(btnRemove);
-            Controls.Add(IstTasks);
+            Controls.Add(LstTasks);
             Controls.Add(btnAdd);
             Controls.Add(txtTask);
             Name = "Form1";
@@ -111,7 +111,7 @@
         private TextBox txtTask;
         private ContextMenuStrip contextMenuStrip1;
         private Button btnAdd;
-        private ListBox IstTasks;
+        private ListBox LstTasks;
         private Button btnRemove;
         private Button btnDone;
     }
