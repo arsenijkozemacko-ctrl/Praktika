@@ -16,7 +16,7 @@ namespace Выполнение_модуля_8
         private Point dragStartPoint;
         private Point mapOffset = Point.Empty;
 
-        // Переменные для масштабирования (ЗУМ)
+        // Переменные для масштабирования
         private double zoom = 1.0;
         private const double ZoomStep = 0.1;
 
@@ -24,22 +24,33 @@ namespace Выполнение_модуля_8
         {
             InitializeComponent();
 
-            // Подписываем события мыши (включая колесико)
+            // Подписываем события мыши
             picMap.MouseDown += picMap_MouseDown;
             picMap.MouseUp += picMap_MouseUp;
             picMap.MouseMove += picMap_MouseMove;
             picMap.MouseClick += picMap_MouseClick;
-            picMap.MouseWheel += picMap_MouseWheel; // Колесико мыши
+            picMap.MouseWheel += picMap_MouseWheel;
             picMap.Paint += picMap_Paint;
 
-            // Добавляем тестовые точки (X, Y, Название, Описание)
+            // Подписываем событие закрытия формы (для автосохранения)
+            this.FormClosing += Form1_FormClosing;
+
+            // 1. ЗАГРУЖАЕМ ТОЧКИ ИЗ ФАЙЛА ПРИ СТАРТЕ
+            mapManager.LoadFromFile("saved_map.txt");
+
+            // Тестовые точки (добавятся, если файла еще нет)
             mapManager.AddMarker(150, 150, "Кафе", "Ул. Пушкина, 10");
             mapManager.AddMarker(350, 250, "Парк", "Центральный вход");
 
             UpdateList();
         }
 
-        // Обновление списка точек слева
+        // 2. СОХРАНЯЕМ ТОЧКИ ПРИ ЗАКРЫТИИ
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            mapManager.SaveToFile("saved_map.txt");
+        }
+
         private void UpdateList()
         {
             lstMarkers.Items.Clear();
@@ -47,17 +58,12 @@ namespace Выполнение_модуля_8
             {
                 lstMarkers.Items.Add(m.Title);
             }
-            picMap.Invalidate(); // Перерисовываем карту
+            picMap.Invalidate();
         }
 
-        // Удаление выбранной точки
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            if (lstMarkers.SelectedIndex == -1)
-            {
-                MessageBox.Show("Выберите точку в списке!");
-                return;
-            }
+            if (lstMarkers.SelectedIndex == -1) return;
 
             mapManager.RemoveMarkerAt(lstMarkers.SelectedIndex);
             selectedMarker = null;
@@ -65,28 +71,20 @@ namespace Выполнение_модуля_8
             UpdateList();
         }
 
-        // === ПРОКРУТКА КОЛЕСИКА (ЗУМ) ===
         private void picMap_MouseWheel(object sender, MouseEventArgs e)
         {
-            if (e.Delta > 0) // Приближаем
-            {
-                zoom += ZoomStep;
-            }
-            else if (e.Delta < 0 && zoom > 0.2) // Отдаляем
-            {
-                zoom -= ZoomStep;
-            }
+            if (e.Delta > 0) zoom += ZoomStep;
+            else if (e.Delta < 0 && zoom > 0.2) zoom -= ZoomStep;
 
-            picMap.Invalidate(); // Перерисовываем
+            picMap.Invalidate();
         }
 
-        // === ОТРИСОВКА СЕТКИ И МАРКЕРОВ ===
         private void picMap_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
             g.Clear(Color.WhiteSmoke);
 
-            // 1. Сетка с учетом масштаба
+            // Сетка
             Pen gridPen = new Pen(Color.LightGray, 1);
             int step = (int)(50 * zoom);
             if (step < 5) step = 5;
@@ -99,7 +97,7 @@ namespace Выполнение_модуля_8
             for (int j = startY; j < picMap.Height; j += step)
                 g.DrawLine(gridPen, 0, j, picMap.Width, j);
 
-            // 2. Маркеры с учетом масштаба
+            // Маркеры
             foreach (var m in mapManager.GetAllMarkers())
             {
                 int drawX = (int)(m.X * zoom) + mapOffset.X;
@@ -110,14 +108,11 @@ namespace Выполнение_модуля_8
                 {
                     Brush brush = (m == selectedMarker) ? Brushes.Red : Brushes.Blue;
                     g.FillEllipse(brush, drawX - currentRadius, drawY - currentRadius, currentRadius * 2, currentRadius * 2);
-
-                    // Подпись маркера
                     g.DrawString(m.Title, this.Font, Brushes.Black, drawX + currentRadius, drawY - 10);
                 }
             }
         }
 
-        // === НАЖАТИЕ МЫШИ ===
         private void picMap_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -129,7 +124,6 @@ namespace Выполнение_модуля_8
             }
         }
 
-        // === ОТПУСКАНИЕ МЫШИ ===
         private void picMap_MouseUp(object sender, MouseEventArgs e)
         {
             isDragging = false;
@@ -138,45 +132,25 @@ namespace Выполнение_модуля_8
 
         private void picMap_MouseMove(object sender, MouseEventArgs e)
         {
-            // --- 1. ОБНОВЛЕНИЕ КООРДИНАТ В РЕАЛЬНОМ ВРЕМЕНИ ---
-            // Вычисляем координаты курсора (учитывая зум и сдвиг)
-            int currentMapX = (int)((e.X - mapOffset.X) / zoom);
-            int currentMapY = (int)((e.Y - mapOffset.Y) / zoom);
+            if (!isDragging) return;
 
-            // Переводим в "реальные" координаты (например, 1 пиксель = 0.01)
-            double realX = Math.Round(currentMapX * 0.01, 2);
-            double realY = Math.Round(currentMapY * 0.01, 2);
+            int dx = e.X - dragStartPoint.X;
+            int dy = e.Y - dragStartPoint.Y;
 
-            // Выводим в Label
-            lblCoords.Text = $"X: {realX} | Y: {realY}";
+            if (Math.Abs(dx) > 2 || Math.Abs(dy) > 2) hasDragged = true;
 
-            // --- 2. ЛОГИКА ПЕРЕТАСКИВАНИЯ КАРТЫ ---
-            if (isDragging)
-            {
-                int dx = e.X - dragStartPoint.X;
-                int dy = e.Y - dragStartPoint.Y;
+            mapOffset.X += dx;
+            mapOffset.Y += dy;
+            dragStartPoint = e.Location;
 
-                // Если сдвиг больше 2 пикселей — это перетаскивание
-                if (Math.Abs(dx) > 2 || Math.Abs(dy) > 2)
-                    hasDragged = true;
-
-                mapOffset.X += dx;
-                mapOffset.Y += dy;
-                dragStartPoint = e.Location;
-
-                picMap.Invalidate();
-            }
+            picMap.Invalidate();
         }
 
-        // === КЛИК ПО КАРТЕ (ДОБАВЛЕНИЕ ИЛИ ВЫДЕЛЕНИЕ) ===
         private void picMap_MouseClick(object sender, MouseEventArgs e)
         {
-            // Заставляем PictureBox получить фокус, чтобы ловить колесико
             picMap.Focus();
-
             if (hasDragged) return;
 
-            // Переводим клик в координаты карты (с учетом зума и смещения)
             int clickMapX = (int)((e.X - mapOffset.X) / zoom);
             int clickMapY = (int)((e.Y - mapOffset.Y) / zoom);
 
